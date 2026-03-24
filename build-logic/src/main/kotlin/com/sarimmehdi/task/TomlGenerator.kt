@@ -42,9 +42,12 @@ object TomlGenerator {
             }
             .filter { it.libraries.isNotEmpty() }
 
+        val activeVersionNames = (allLibraries.map { it.versionName } + allPlugins.map { it.versionName }).toSet()
+
         val versionLines = (allLibraries.map { it.versionName to it.versionValue } +
                 allPlugins.map { it.versionName to it.versionValue })
             .distinctBy { it.first }
+            .filter { it.first in activeVersionNames }
             .map { "${it.first} = \"${it.second}\"" }
 
         currentContent = appendToSection(currentContent, SECTION_NAME_VERSIONS, versionLines)
@@ -57,17 +60,17 @@ object TomlGenerator {
         }
         currentContent = appendToSection(currentContent, SECTION_NAME_LIBRARIES, libraryLines)
 
+        val bundleLines = allBundles.map { bundle ->
+            "${bundle.bundleName} = [\n    ${bundle.libraries.joinToString(",\n    ") { "\"$it\"" }}\n]"
+        }
+        currentContent = appendToSection(currentContent, SECTION_NAME_BUNDLES, bundleLines)
+
         val pluginLines = allPlugins.map {
             "${it.pluginName} = { " +
                     "$PLUGIN_SECTION_ID = \"${it.id}\", " +
                     "$PLUGIN_SECTION_VERSION_REF = \"${it.versionName}\" }"
         }
         currentContent = appendToSection(currentContent, SECTION_NAME_PLUGINS, pluginLines)
-
-        val bundleLines = allBundles.map { bundle ->
-            "${bundle.bundleName} = [\n    ${bundle.libraries.joinToString(",\n    ") { "\"$it\"" }}\n]"
-        }
-        currentContent = appendToSection(currentContent, SECTION_NAME_BUNDLES, bundleLines)
 
         tomlFile.writeText(currentContent.trim() + "\n")
 
@@ -103,7 +106,25 @@ object TomlGenerator {
 
     const val TASK_NAME = "generateToml"
     const val TASK_DESCRIPTION = "Forges the libs.version.toml file by merging StarterData with your custom extensions."
-    const val TASK_EXAMPLE = "./gradlew $TASK_NAME"
+    val TASK_EXAMPLE = """
+        Usage Example in build.gradle.kts:
+        
+        kmpGenerator {
+            // Overwrite existing file or append new entries
+            overwriteExisting.set(true)
+            
+            // Exclude specific default bundles/libraries/plugins
+            excludedBundles.set(listOf("composeCoreBundle"))
+            excludedLibraries.set(listOf("composeRuntimeLibrary"))
+            excludedPlugins.set(listOf("kotlinSerializationPlugin"))
+            
+            // Add your own custom entries
+            additionalLibraries.add(Library("myLib", "com.example", "core", "1.0.0", "myLibVersion"))
+        }
+        
+        Run via terminal:
+        ./gradlew $TASK_NAME
+    """.trimIndent()
     private const val TOML_LOCATION = "gradle/libs.version.toml"
 
     private const val SECTION_NAME_VERSIONS = "versions"

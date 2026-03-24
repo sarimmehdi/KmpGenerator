@@ -16,6 +16,7 @@ dependencies {
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.3")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.3")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.3")
 }

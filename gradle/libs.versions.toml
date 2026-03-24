@@ -1,11 +1,9 @@
 [versions]
 agp = "9.1.0"
 coreKtx = "1.18.0"
-kotlinPoetVersion = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-kotlinPoetLibrary = { group = "com.squareup", name = "kotlinpoet", version.ref = "kotlinPoetVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
