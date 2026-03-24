@@ -1,0 +1,110 @@
+package com.sarimmehdi
+
+import com.sarimmehdi.model.Bundle
+import com.sarimmehdi.model.Library
+import com.sarimmehdi.model.Plugin
+
+object StarterData {
+    val libraries = listOf(
+        Library(
+            "uiTestJunit4Version",
+            "1.10.3",
+            "uiTestJunit4Library",
+            "org.jetbrains.compose.ui",
+            "ui-test-junit4"
+        ),
+        Library("junit5Version", "5.10.2", "junitJupiterApiLibrary", "org.junit.jupiter", "junit-jupiter-api"),
+        Library("junit5Version", "5.10.2", "junitJupiterParamsLibrary", "org.junit.jupiter", "junit-jupiter-params"),
+        Library("junit5Version", "5.10.2", "junitJupiterEngineLibrary", "org.junit.jupiter", "junit-jupiter-engine"),
+        Library("kotlinVersion", "2.3.20", "kotlinTestLibrary", "org.jetbrains.kotlin", "kotlin-test"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeUiTestLibrary", "org.jetbrains.compose.ui", "ui-test"),
+        Library("androidxActivityVersion", "1.13.0", "androidxActivityComposeLibrary", "androidx.activity", "activity-compose"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeUiToolingLibrary", "org.jetbrains.compose.ui", "ui-tooling"),
+        Library("androidxLifecycleVersion", "2.9.6", "androidxLifecycleViewmodelComposeLibrary", "org.jetbrains.androidx.lifecycle", "lifecycle-viewmodel-compose"),
+        Library("androidxLifecycleVersion", "2.9.6", "androidxLifecycleRuntimeComposeLibrary", "org.jetbrains.androidx.lifecycle", "lifecycle-runtime-compose"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeRuntimeLibrary", "org.jetbrains.compose.runtime", "runtime"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeFoundationLibrary", "org.jetbrains.compose.foundation", "foundation"),
+        Library("material3Version", "1.11.0-alpha04", "composeMaterial3Library", "org.jetbrains.compose.material3", "material3"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeUiLibrary", "org.jetbrains.compose.ui", "ui"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeComponentsResourcesLibrary", "org.jetbrains.compose.components", "components-resources"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeUiToolingPreviewLibrary", "org.jetbrains.compose.ui", "ui-tooling-preview"),
+
+        Library("koinVersion", "4.1.1", "koinCoreLibrary", "io.insert-koin", "koin-core"),
+        Library("koinVersion", "4.1.1", "koinComposeLibrary", "io.insert-koin", "koin-compose"),
+        Library("koinVersion", "4.1.1", "koinComposeViewmodelLibrary", "io.insert-koin", "koin-compose-viewmodel"),
+        Library("koinVersion", "4.1.1", "koinAndroidLibrary", "io.insert-koin", "koin-android"),
+
+        Library("datastoreVersion", "1.2.1", "androidxDatastorePreferencesLibrary", "androidx.datastore", "datastore-preferences"),
+        Library("datastoreVersion", "1.2.1", "androidxDatastorePreferencesCoreLibrary", "androidx.datastore", "datastore-preferences-core"),
+        Library("roomVersion", "2.8.4", "roomRuntimeLibrary", "androidx.room", "room-runtime"),
+        Library("roomVersion", "2.8.4", "roomCompilerLibrary", "androidx.room", "room-compiler"),
+        Library("sqliteVersion", "2.6.2", "sqliteBundledLibrary", "androidx.sqlite", "sqlite-bundled"),
+
+        Library("kotlinxDatetimeVersion", "0.7.1", "kotlinxDatetimeLibrary", "org.jetbrains.kotlinx", "kotlinx-datetime"),
+        Library("kotlinxCollectionsImmutableVersion", "0.4.0", "kotlinxCollectionsImmutableLibrary", "org.jetbrains.kotlinx", "kotlinx-collections-immutable"),
+        Library("kotlinxCoroutinesVersion", "1.10.2", "kotlinxCoroutinesCoreLibrary", "org.jetbrains.kotlinx", "kotlinx-coroutines-core"),
+        Library("kotlinxCoroutinesVersion", "1.10.2", "kotlinxCoroutinesSwingLibrary", "org.jetbrains.kotlinx", "kotlinx-coroutines-swing"),
+
+        Library("kotlinVersion", "2.3.20", "kotlinGradlePluginLibrary", "org.jetbrains.kotlin", "kotlin-gradle-plugin"),
+        Library("agpVersion", "9.1.0", "androidGradlePluginLibrary", "com.android.tools.build", "gradle"),
+        Library("composeMultiplatformVersion", "1.10.3", "composeGradlePluginLibrary", "org.jetbrains.compose", "compose-gradle-plugin"),
+        Library("detektVersion", "1.23.8", "detektGradlePluginLibrary", "io.gitlab.arturbosch.detekt", "detekt-gradle-plugin"),
+        Library("ktlintVersion", "14.2.0", "ktlintGradlePluginLibrary", "org.jlleitschuh.gradle.ktlint", "org.jlleitschuh.gradle.ktlint.gradle.plugin"),
+        Library("roomVersion", "2.8.4", "roomGradlePluginLibrary", "androidx.room", "room-gradle-plugin"),
+        Library("agpVersion", "9.1.0", "androidKotlinMultiplatformGradlePluginLibrary", "com.android.kotlin.multiplatform.library", "com.android.kotlin.multiplatform.library.gradle.plugin"),
+        Library("kspVersion", "2.3.6", "kspGradlePluginLibrary", "com.google.devtools.ksp", "com.google.devtools.ksp.gradle.plugin"),
+
+        Library("coreKtxVersion", "1.18.0", "coreKtx", "androidx.core", "core-ktx"),
+        Library("appcompatVersion", "1.7.1", "appcompat", "androidx.appcompat", "appcompat"),
+        Library("materialVersion", "1.13.0", "material", "com.google.android.material", "material"),
+        Library("kotlinStdlibVersion", "2.3.20", "kotlinStdlib", "org.jetbrains.kotlin", "kotlin-stdlib"),
+        Library("runnerVersion", "1.7.0", "runner", "androidx.test", "runner"),
+        Library("coreVersion", "1.7.0", "core", "androidx.test", "core"),
+        Library("junitVersion", "1.3.0", "junit", "androidx.test.ext", "junit")
+    )
+
+    val plugins = listOf(
+        Plugin("agpVersion", "9.1.0", "androidApplicationPlugin", "com.android.application"),
+        Plugin("agpVersion", "9.1.0", "androidLibraryPlugin", "com.android.library"),
+        Plugin("composeHotReloadVersion", "1.0.0", "composeHotReloadPlugin", "org.jetbrains.compose.hot-reload"),
+        Plugin("composeMultiplatformVersion", "1.10.3", "composeMultiplatformPlugin", "org.jetbrains.compose"),
+        Plugin("kotlinVersion", "2.3.20", "composeCompilerPlugin", "org.jetbrains.kotlin.plugin.compose"),
+        Plugin(
+            "kotlinVersion",
+            "2.3.20",
+            "kotlinMultiplatformPlugin",
+            "org.jetbrains.kotlin.multiplatform"
+        ),
+        Plugin("roomVersion", "2.8.4", "roomPlugin", "androidx.room"),
+        Plugin("kspVersion", "2.3.6", "kspPlugin", "com.google.devtools.ksp"),
+        Plugin("detektVersion", "1.23.8", "detektPlugin", "io.gitlab.arturbosch.detekt"),
+        Plugin("ktlintVersion", "14.2.0", "ktlintPlugin", "org.jlleitschuh.gradle.ktlint"),
+        Plugin("kotlinVersion", "2.3.20", "kotlinAndroidPlugin", "org.jetbrains.kotlin.android"),
+        Plugin("agpVersion", "9.1.0", "androidKotlinMultiplatformLibraryPlugin", "com.android.kotlin.multiplatform.library"),
+        Plugin("agpVersion", "9.1.0", "androidLintPlugin", "com.android.lint")
+    )
+
+    val bundles = listOf(
+        Bundle("composeCoreBundle", listOf("composeRuntimeLibrary", "composeFoundationLibrary", "composeMaterial3Library", "composeUiLibrary", "composeComponentsResourcesLibrary")),
+        Bundle("androidxLifecycleBundle", listOf("androidxLifecycleViewmodelComposeLibrary", "androidxLifecycleRuntimeComposeLibrary")),
+        Bundle("koinCommonBundle", listOf("koinCoreLibrary", "koinComposeLibrary", "koinComposeViewmodelLibrary")),
+        Bundle("roomCommonBundle", listOf("roomRuntimeLibrary", "sqliteBundledLibrary")),
+        Bundle("datastoreBundle", listOf("androidxDatastorePreferencesLibrary", "androidxDatastorePreferencesCoreLibrary")),
+        Bundle("kotlinxEssentialsBundle", listOf("kotlinxDatetimeLibrary", "kotlinxCollectionsImmutableLibrary", "kotlinxCoroutinesCoreLibrary")),
+        Bundle("androidUiSupportBundle", listOf("androidxActivityComposeLibrary", "composeUiToolingPreviewLibrary", "koinAndroidLibrary")),
+        Bundle("unitTestingBundle", listOf("kotlinTestLibrary", "kotlinxCoroutinesCoreLibrary", "composeUiTestLibrary", "junitJupiterApiLibrary", "junitJupiterParamsLibrary", "junitJupiterEngineLibrary")),
+        Bundle(
+            "gradlePluginBundle",
+            listOf(
+                "kotlinGradlePluginLibrary",
+                "androidGradlePluginLibrary",
+                "composeGradlePluginLibrary",
+                "detektGradlePluginLibrary",
+                "ktlintGradlePluginLibrary",
+                "roomGradlePluginLibrary",
+                "androidKotlinMultiplatformGradlePluginLibrary",
+                "kspGradlePluginLibrary"
+            )
+        )
+    )
+}
