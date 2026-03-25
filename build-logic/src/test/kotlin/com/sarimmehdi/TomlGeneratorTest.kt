@@ -3,6 +3,8 @@ package com.sarimmehdi
 import com.sarimmehdi.model.Bundle
 import com.sarimmehdi.model.Library
 import com.sarimmehdi.model.Plugin
+import com.sarimmehdi.task.toml.TomlGenerator.Companion.PROTECTED_BUNDLE_NAME
+import com.sarimmehdi.task.toml.TomlGenerator.Companion.PROTECTED_LIBRARY_NAMES
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -21,7 +23,7 @@ class TomlGeneratorTest {
 
     private val buildFile by lazy { testProjectDir.resolve("build.gradle.kts") }
     private val settingsFile by lazy { testProjectDir.resolve("settings.gradle.kts") }
-    private val tomlFile by lazy { testProjectDir.resolve("gradle/libs.version.toml") }
+    private val tomlFile by lazy { testProjectDir.resolve("gradle/libs.versions.toml") }
 
     private fun setupProject(
         excludedBundles: List<String> = emptyList(),
@@ -35,20 +37,22 @@ class TomlGeneratorTest {
         val pluginList = excludedPlugins.joinToString { "\"$it\"" }
 
         buildFile.writeText("""
-        import com.sarimmehdi.StarterData
+    import com.sarimmehdi.StarterData
 
-        plugins {
-            id("com.sarimmehdi.kmp-generator")
-        }
-        
-        kmpGenerator {
+    plugins {
+        id("com.sarimmehdi.kmp-generator")
+    }
+    
+    kmpGenerator {
+        // Properties are now nested inside the 'toml' block
+        toml {
             overwriteExisting.set(true)
             
-            // Adding <String> to the listOf ensures the compiler knows the type parameter 'T'
             excludedBundles.set(StarterData.bundles.filter { it.bundleName in listOf<String>($bundleList) })
             excludedLibraries.set(StarterData.libraries.filter { it.libraryName in listOf<String>($libList) })
             excludedPlugins.set(StarterData.plugins.filter { it.pluginName in listOf<String>($pluginList) })
         }
+    }
     """.trimIndent())
     }
 
@@ -68,7 +72,7 @@ class TomlGeneratorTest {
 
         val content = runGenerator()
 
-        verifyBundlesNotExist(content, StarterData.bundles)
+        verifyBundlesNotExist(content, StarterData.bundles - protectedBundles.toSet())
         verifyVersions(content, StarterData.libraries, StarterData.plugins)
         verifyLibraries(content, StarterData.libraries)
         verifyPlugins(content, StarterData.plugins)
@@ -94,9 +98,9 @@ class TomlGeneratorTest {
 
         val content = runGenerator()
 
-        verifyLibrariesNotExist(content, StarterData.libraries)
+        verifyLibrariesNotExist(content, StarterData.libraries - protectedLibraries.toSet())
         verifyVersions(content, emptyList(), StarterData.plugins)
-        verifyBundlesNotExist(content, StarterData.bundles)
+        verifyBundlesNotExist(content, StarterData.bundles - protectedBundles.toSet())
         verifyPlugins(content, StarterData.plugins)
     }
 
@@ -109,8 +113,8 @@ class TomlGeneratorTest {
 
         val content = runGenerator()
 
-        verifyLibrariesNotExist(content, StarterData.libraries)
-        verifyBundlesNotExist(content, StarterData.bundles)
+        verifyLibrariesNotExist(content, StarterData.libraries - protectedLibraries.toSet())
+        verifyBundlesNotExist(content, StarterData.bundles - protectedBundles.toSet())
         verifyVersions(content, emptyList(), StarterData.plugins)
         verifyPlugins(content, StarterData.plugins)
     }
@@ -125,13 +129,13 @@ class TomlGeneratorTest {
         val content = runGenerator()
 
         verifyLibraries(content, StarterData.libraries)
-        verifyBundlesNotExist(content, StarterData.bundles)
+        verifyBundlesNotExist(content, StarterData.bundles - protectedBundles.toSet())
         verifyVersions(content, StarterData.libraries, emptyList())
         verifyPluginsNotExist(content, StarterData.plugins)
     }
 
     @Test
-    fun `exclude all libraries and plugins results in a completely empty file`() {
+    fun `exclude all libraries and plugins results in protected bundles and libraries only`() {
         setupProject(
             excludedLibraries = StarterData.libraries.map { it.libraryName },
             excludedPlugins = StarterData.plugins.map { it.pluginName }
@@ -139,7 +143,9 @@ class TomlGeneratorTest {
 
         val content = runGenerator()
 
-        assertTrue(content.trim().isEmpty(), "File should be completely empty")
+        verifyBundles(content, protectedBundles)
+        verifyLibraries(content, protectedLibraries)
+        verifyVersions(content, protectedLibraries, emptyList())
     }
 
     @Test
@@ -153,6 +159,29 @@ class TomlGeneratorTest {
         verifyVersions(content, StarterData.libraries, StarterData.plugins)
     }
 
+    @Test
+    fun `gradlePluginBundle and its libraries cannot be excluded by the user`() {
+        setupProject(
+            excludedBundles = listOf(PROTECTED_BUNDLE_NAME),
+            excludedLibraries = PROTECTED_LIBRARY_NAMES.toList()
+        )
+
+        val runner = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments("generateToml")
+            .withPluginClasspath()
+            .build()
+
+        val content = tomlFile.readText()
+
+        assertTrue(runner.output.contains("Warning"), "Should print a warning when user tries to exclude protected items")
+        assertTrue(runner.output.contains(PROTECTED_BUNDLE_NAME), "Warning should mention the protected bundle name")
+
+        verifyBundles(content, protectedBundles)
+        verifyLibraries(content, protectedLibraries)
+        verifyVersions(content, protectedLibraries, StarterData.plugins)
+    }
+
     @ParameterizedTest
     @MethodSource("provideExcludeScenarios")
     fun `generateToml respects excludedBundles and removes them from output`(
@@ -160,16 +189,12 @@ class TomlGeneratorTest {
         excludedLibraries: List<Library>,
         excludedPlugins: List<Plugin>,
     ) {
-        println(excludedBundles)
-        println(excludedLibraries)
-        println(excludedPlugins)
         setupProject(
             excludedBundles = excludedBundles.map { it.bundleName },
             excludedLibraries = excludedLibraries.map { it.libraryName },
             excludedPlugins = excludedPlugins.map { it.pluginName }
         )
         val content = runGenerator()
-        println(content)
 
         val includedLibraries = StarterData.libraries - excludedLibraries.toSet()
         val includedBundles = StarterData.bundles - excludedBundles.toSet()
@@ -335,21 +360,27 @@ class TomlGeneratorTest {
     }
 
     companion object {
+        private val protectedBundles = StarterData.bundles.filter { it.bundleName == PROTECTED_BUNDLE_NAME }
+        private val protectedLibraries = StarterData.libraries.filter { it.libraryName in PROTECTED_LIBRARY_NAMES }
         @JvmStatic
         fun provideExcludeScenarios(): Stream<Arguments> = Stream.of(
             Arguments.of(
-                StarterData.bundles.filter { it.bundleName == "composeCoreBundle" },
+                (StarterData.bundles - protectedBundles.toSet())
+                    .filter { it.bundleName == "composeCoreBundle" },
                 emptyList<Library>(),
                 emptyList<Plugin>()
             ),
             Arguments.of(
                 emptyList<Bundle>(),
-                StarterData.libraries.filter { it.libraryName == "androidx-core-ktx" },
+                (StarterData.libraries - protectedLibraries.toSet())
+                    .filter { it.libraryName == "androidx-core-ktx" },
                 StarterData.plugins.filter { it.pluginName == "kotlin-android" }
             ),
             Arguments.of(
-                StarterData.bundles.filter { it.bundleName in listOf("composeCoreBundle", "koinCommonBundle") },
-                StarterData.libraries.filter { it.libraryName.contains("room") },
+                (StarterData.bundles - protectedBundles.toSet())
+                    .filter { it.bundleName in listOf("composeCoreBundle", "koinCommonBundle") },
+                (StarterData.libraries - protectedLibraries.toSet())
+                    .filter { it.libraryName.contains("room") },
                 StarterData.plugins.filter { it.pluginName == "google-services" }
             ),
             Arguments.of(emptyList<Bundle>(), emptyList<Library>(), emptyList<Plugin>())

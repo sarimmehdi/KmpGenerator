@@ -1,53 +1,61 @@
 package com.sarimmehdi.task
 
-object KmpHelpReporter {
+import com.sarimmehdi.task.buildlogic.GenerateBuildLogicTask
+import com.sarimmehdi.task.toml.StarterDataReporter
+import com.sarimmehdi.task.toml.TomlGenerator
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.tasks.TaskAction
 
-    const val TASK_NAME = "helpKmpGenerator"
-    const val TASK_DESCRIPTION = "Displays the help guide for using KmpGenerator."
-    const val TASK_EXAMPLE = "./gradlew $TASK_NAME"
+abstract class KmpHelpReporter : DefaultTask() {
 
+    @TaskAction
     fun printHelp() {
-        println("\n" + "=".repeat(50))
-        println(" KMP GENERATOR: USAGE GUIDE")
-        println("=".repeat(50))
-
-        println("\n[AVAILABLE TASKS]")
-
-        printTask(
-            TomlGenerator.TASK_NAME,
-            TomlGenerator.TASK_DESCRIPTION,
-            TomlGenerator.TASK_EXAMPLE
-        )
-
-        printTask(
-            StarterDataReporter.TASK_NAME,
-            StarterDataReporter.TASK_DESCRIPTION,
-            StarterDataReporter.TASK_EXAMPLE
-        )
-
-        printTask(
-            TASK_NAME,
-            TASK_DESCRIPTION,
-            TASK_EXAMPLE
-        )
-
-        println("\n[CONFIGURATION EXAMPLES]")
-        println("Add to your build.gradle.kts:")
-        println("""
-    kmpGenerator {
-        // Force overwrite instead of appending (Warning: Clears existing TOML)
-        overwriteExisting.set(true)
-
-        additionalLibraries.add(...)
-    }
-        """.trimIndent())
-
-        println("\n" + "=".repeat(50))
+        println(messageToPrint())
     }
 
-    private fun printTask(name: String, desc: String, example: String) {
-        println("\n> Task: $name")
-        println("  Description: $desc")
-        println("  Usage:       $example")
+    companion object {
+        const val TASK_NAME = "helpKmpGenerator"
+        const val TASK_DESCRIPTION = "Displays the help guide for using KmpGenerator."
+        fun register(
+            project: Project,
+            taskGroup: String,
+        ) {
+            project.tasks.register(TASK_NAME, KmpHelpReporter::class.java) {
+                group = taskGroup
+                description = TASK_DESCRIPTION
+            }
+        }
+
+        fun messageToPrint(): String {
+            val horizontalRule = "=".repeat(50)
+
+            return """
+        |
+        |$horizontalRule
+        | KMP GENERATOR: USAGE GUIDE
+        |$horizontalRule
+        |
+        |[AVAILABLE TASKS]
+        |
+        |> Task: ${TomlGenerator.TASK_NAME}
+        |  Description: ${TomlGenerator.TASK_DESCRIPTION}
+        |  Usage:       ${TomlGenerator.TASK_EXAMPLE}
+        |
+        |> Task: ${StarterDataReporter.TASK_NAME}
+        |  Description: ${StarterDataReporter.TASK_DESCRIPTION}
+        |  Usage:       ${StarterDataReporter.TASK_EXAMPLE}
+        |  
+        |> Task: ${GenerateBuildLogicTask.TASK_NAME}
+        |  Description: ${GenerateBuildLogicTask.TASK_DESCRIPTION}
+        |  Usage:       ${GenerateBuildLogicTask.TASK_EXAMPLE}
+        |
+        |[CONFIGURATION EXAMPLES]
+        |Add to your build.gradle.kts:
+        |
+        |
+        |$horizontalRule
+    """.trimMargin()
+        }
     }
 }

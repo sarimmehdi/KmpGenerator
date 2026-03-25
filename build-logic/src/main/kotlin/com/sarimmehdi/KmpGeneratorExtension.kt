@@ -1,18 +1,24 @@
 package com.sarimmehdi
 
-import com.sarimmehdi.model.Bundle
-import com.sarimmehdi.model.Library
-import com.sarimmehdi.model.Plugin
-import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
+import com.sarimmehdi.task.buildlogic.GenerateBuildLogicTask
+import com.sarimmehdi.task.toml.TomlGenerator
+import org.gradle.api.Action
+import org.gradle.api.tasks.Nested
 
-interface KmpGeneratorExtension {
-    val additionalLibraries: ListProperty<Library>
-    val additionalPlugins: ListProperty<Plugin>
-    val additionalBundles: ListProperty<Bundle>
+abstract class KmpGeneratorExtension {
+    @get:Nested
+    abstract val toml: TomlGenerator.TomlConfig
 
-    val excludedLibraries: ListProperty<Library>
-    val excludedPlugins: ListProperty<Plugin>
-    val excludedBundles: ListProperty<Bundle>
-    val overwriteExisting: Property<Boolean>
+    @Suppress("unused")
+    fun toml(action: Action<TomlGenerator.TomlConfig>) {
+        action.execute(toml)
+    }
+
+    @get:Nested
+    abstract val buildLogic: GenerateBuildLogicTask.GenerateBuildLogicConfig
+
+    @Suppress("unused")
+    fun buildLogic(action: Action<GenerateBuildLogicTask.GenerateBuildLogicConfig>) {
+        action.execute(buildLogic)
+    }
 }

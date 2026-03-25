@@ -1,9 +1,13 @@
-package com.sarimmehdi.task
+package com.sarimmehdi.task.toml
 
 import com.sarimmehdi.StarterData
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.tasks.TaskAction
 
-object StarterDataReporter {
+abstract class StarterDataReporter : DefaultTask() {
 
+    @TaskAction
     fun printAll() {
         println("\n" + "=".repeat(40))
         println(" KMP GENERATOR: STARTER DATA INVENTORY")
@@ -46,7 +50,18 @@ object StarterDataReporter {
         block()
     }
 
-    const val TASK_NAME = "listStarterData"
-    const val TASK_DESCRIPTION = "Inventory Check: Lists every library, plugin, and bundle currently hardcoded in StarterData."
-    const val TASK_EXAMPLE = "./gradlew $TASK_NAME"
+    companion object {
+        const val TASK_NAME = "listStarterData"
+        const val TASK_DESCRIPTION = "Inventory Check: Lists every library, plugin, and bundle currently hardcoded in StarterData."
+        const val TASK_EXAMPLE = "./gradlew $TASK_NAME"
+        fun register(
+            project: Project,
+            taskGroup: String,
+        ) {
+            project.tasks.register(TASK_NAME, StarterDataReporter::class.java) {
+                group = taskGroup
+                description = TASK_DESCRIPTION
+            }
+        }
+    }
 }

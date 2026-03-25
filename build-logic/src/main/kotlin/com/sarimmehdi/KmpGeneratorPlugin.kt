@@ -1,47 +1,40 @@
 package com.sarimmehdi
 
 import com.sarimmehdi.task.KmpHelpReporter
-import com.sarimmehdi.task.StarterDataReporter
-import com.sarimmehdi.task.TomlGenerator
+import com.sarimmehdi.task.buildlogic.GenerateBuildLogicTask
+import com.sarimmehdi.task.toml.StarterDataReporter
+import com.sarimmehdi.task.toml.TomlGenerator
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class KmpGeneratorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        val extension = project.extensions.create(EXTENSION_NAME, KmpGeneratorExtension::class.java)
+        val extension = project.extensions.create("kmpGenerator", KmpGeneratorExtension::class.java)
 
-        project.tasks.register(TomlGenerator.TASK_NAME) {
-            group = TASK_GROUP
-            description = TomlGenerator.TASK_DESCRIPTION
-            doLast {
-                TomlGenerator.generate(
-                    project = project,
-                    extension = extension,
-                    excludedLibraries = extension.excludedLibraries.getOrElse(emptyList()),
-                    excludedPlugins = extension.excludedPlugins.getOrElse(emptyList()),
-                    excludedBundles = extension.excludedBundles.getOrElse(emptyList())
-                )
-            }
-        }
-        project.tasks.register(StarterDataReporter.TASK_NAME) {
-            group = TASK_GROUP
-            description = StarterDataReporter.TASK_DESCRIPTION
+        TomlGenerator.register(
+            project = project,
+            taskGroup = TASK_GROUP,
+            config = extension.toml
+        )
 
-            doLast {
-                StarterDataReporter.printAll()
-            }
-        }
-        project.tasks.register(KmpHelpReporter.TASK_NAME) {
-            group = TASK_GROUP
-            description = KmpHelpReporter.TASK_DESCRIPTION
-            doLast {
-                KmpHelpReporter.printHelp()
-            }
-        }
+        StarterDataReporter.register(
+            project = project,
+            taskGroup = TASK_GROUP,
+        )
+
+        KmpHelpReporter.register(
+            project = project,
+            taskGroup = TASK_GROUP
+        )
+
+        GenerateBuildLogicTask.register(
+            project = project,
+            taskGroup = TASK_GROUP,
+            config = extension.buildLogic
+        )
     }
 
     companion object {
-        private const val EXTENSION_NAME = "kmpGenerator"
-        private const val TASK_GROUP = "kmp-generator"
+        const val TASK_GROUP = "kmp-generator"
     }
 }
