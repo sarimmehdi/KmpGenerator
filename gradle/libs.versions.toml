@@ -1,10 +1,37 @@
 [versions]
-agp = "9.1.0"
-coreKtx = "1.18.0"
+agpVersion = "9.1.0"
+coreKtxVersion = "1.18.0"
+kotlinPoetVersion = "2.2.0"
+gradlePublishVersion = "2.1.1"
+junitVersion = "6.0.3"
+assertJVersion = "3.27.7"
+detektVersion = "1.23.8"
+ktlintVersion = "14.2.0"
 
 [libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidxCoreKtxLibrary = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtxVersion" }
+kotlinPoetLibrary = { group = "com.squareup", name = "kotlinpoet", version.ref = "kotlinPoetVersion" }
+junitJupiterApiLibrary = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junitVersion" }
+junitJupiterParamsLibrary = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junitVersion" }
+junitJupiterEngineLibrary = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junitVersion" }
+junitPlatformLibrary = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitVersion" }
+assertJLibrary = { group = "org.assertj", name = "assertj-core", version.ref = "assertJVersion" }
+
+[bundles]
+testBundle = [
+    "junitJupiterApiLibrary",
+    "junitJupiterParamsLibrary",
+    "assertJLibrary",
+]
+
+testRuntime = [
+    "junitJupiterEngineLibrary",
+    "junitPlatformLibrary",
+]
 
 [plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
+androidApplicationPlugin = { id = "com.android.application", version.ref = "agpVersion" }
+gradlePublishPlugin = { id = "com.gradle.plugin-publish", version.ref = "gradlePublishVersion" }
+detektPlugin = { id = "io.gitlab.arturbosch.detekt", version.ref = "detektVersion" }
+ktlintPlugin = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintVersion" }
 

@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.androidApplicationPlugin)
 }
 
 android {
@@ -36,5 +36,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidxCoreKtxLibrary)
 }

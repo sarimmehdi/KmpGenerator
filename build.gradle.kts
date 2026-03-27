@@ -1,3 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.androidApplicationPlugin) apply false
+    alias(libs.plugins.ktlintPlugin) apply false
+    alias(libs.plugins.detektPlugin) apply false
 }
