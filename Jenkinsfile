@@ -50,26 +50,20 @@ pipeline {
 
         stage('Static Analysis') {
             steps {
-                sh './gradlew :kmp-generator-plugin:ktlintCheck :kmp-generator-plugin:detekt --build-cache --no-daemon || true'
+                sh './gradlew detekt ktlintCheck --build-cache --no-daemon'
             }
             post {
                 always {
-                    script {
-                        try {
-                            recordIssues(
-                                enabledForFailure: true,
-                                aggregatingResults: true,
-                                tools: [
-                                    detekt(pattern: '**/build/reports/detekt/detekt-*.xml'),
-                                    checkStyle(pattern: '**/build/reports/ktlint/*.xml', name: 'KtLint')
-                                ]
-                            )
-                        } catch (Exception e) {
-                            echo "Warnings Next Gen plugin missing. Skipping issue recording."
-                        }
-                    }
-
-                    archiveArtifacts artifacts: '**/build/reports/**/*.html', allowEmptyArchive: true
+                    recordIssues(
+                        tool: detekt(pattern: '**/reports/detekt/*.xml'),
+                        id: 'detekt',
+                        name: 'Detekt'
+                    )
+                    recordIssues(
+                        tool: checkStyle(pattern: '**/reports/ktlint/*.xml'),
+                        id: 'ktlint',
+                        name: 'KtLint'
+                    )
                 }
             }
         }
