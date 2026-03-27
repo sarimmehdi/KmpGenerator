@@ -31,19 +31,11 @@ pipeline {
             post {
                 always {
                     junit 'kmp-generator-plugin/build/test-results/test/*.xml'
-
-                    script {
-                        try {
-                            jacoco(
-                                execPattern: '**/build/jacoco/*.exec',
-                                classPattern: '**/build/classes/kotlin/main',
-                                sourcePattern: '**/src/main/kotlin',
-                                inclusionPattern: '**/com/sarimmehdi/**'
-                            )
-                        } catch (Exception e) {
-                            echo "JaCoCo plugin not found. Skipping coverage recording."
-                        }
-                    }
+                    recordCoverage(
+                        tools: [[parser: 'JACOCO', pattern: '**/build/reports/jacoco/test/*.xml']],
+                        id: 'jacoco',
+                        name: 'Code Coverage'
+                    )
                 }
             }
         }
