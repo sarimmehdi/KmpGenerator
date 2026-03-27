@@ -22,6 +22,12 @@ pipeline {
             post {
                 always {
                     junit 'kmp-generator-plugin/build/test-results/test/*.xml'
+                    jacoco(
+                        execPattern: '**/build/jacoco/*.exec',
+                        classPattern: '**/build/classes/kotlin/main',
+                        sourcePattern: '**/src/main/kotlin',
+                        inclusionPattern: '**/com/sarimmehdi/**'
+                    )
                 }
             }
         }

@@ -4,9 +4,47 @@ plugins {
     `kotlin-dsl`
     `java-library`
     `maven-publish`
+    jacoco
     alias(libs.plugins.gradlePublishPlugin)
     alias(libs.plugins.ktlintPlugin)
     alias(libs.plugins.detektPlugin)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude(
+                        "**/gradle/kotlin/dsl/**",
+                        "**/*$*",
+                        "**/KmpGeneratorPlugin_*",
+                    )
+                }
+            },
+        ),
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
 tasks.withType<Detekt>().configureEach {
@@ -46,6 +84,7 @@ tasks.test {
     testLogging {
         events("passed", "skipped", "failed")
     }
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 group = "com.sarimmehdi"
