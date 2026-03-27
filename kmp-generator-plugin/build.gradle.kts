@@ -1,3 +1,5 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 plugins {
     `kotlin-dsl`
     `java-library`
@@ -5,6 +7,29 @@ plugins {
     alias(libs.plugins.gradlePublishPlugin)
     alias(libs.plugins.ktlintPlugin)
     alias(libs.plugins.detektPlugin)
+}
+
+tasks.withType<Detekt>().configureEach {
+    reports {
+        xml.required.set(true)
+        xml.outputLocation.set(layout.buildDirectory.file("reports/detekt/detekt-$name.xml"))
+
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.file("reports/detekt/detekt-$name.html"))
+
+        sarif.required.set(true)
+        sarif.outputLocation.set(layout.buildDirectory.file("reports/detekt/detekt-$name.sarif"))
+    }
+}
+
+ktlint {
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.HTML)
+    }
+    outputToConsole.set(true)
+    ignoreFailures.set(true)
 }
 
 dependencies {
