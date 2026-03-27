@@ -37,7 +37,6 @@ internal fun generateKmpDiPlugin(
             .builder(pkg, "KmpDiPlugin")
             .addType(pluginType)
             .indent("    ")
-            .addImport("org.gradle.internal.Actions", "with")
             .addImport("org.gradle.kotlin.dsl", "configure")
             .addImport("$pkg.utils", "libs", "configureAndroidTarget", "configureQualityTools")
             .addKotlinDefaultImports(includeJvm = false, includeJs = false)
@@ -98,23 +97,18 @@ private fun buildAfterEvaluateBlock(): CodeBlock =
         .build()
 
 private fun pluginApplyBlock(pluginName: String): CodeBlock =
-    CodeBlock.of("apply(⇥\nlibs.plugins.$pluginName⇥\n.get()⇥\n.pluginId,⇥\n⇤⇤⇤)\n")
+    CodeBlock.of(
+        "apply(⇥\nlibs.plugins.$pluginName⇥\n.get()⇤⇥\n.pluginId,⇤⇤\n)\n",
+    )
 
 private fun writeCorrectedFile(
     pkg: String,
     fileSpec: FileSpec,
     outputDir: DirectoryProperty,
 ) {
-    val rawCode = fileSpec.toString()
-    val correctedCode =
-        rawCode
-            .replace(
-                "import org.gradle.`internal`.Actions.with",
-                "import org.gradle.internal.Actions.with",
-            )
-
     val packagePath = pkg.replace(".", "/")
     val targetRoot = File(outputDir.get().asFile, "convention/src/main/kotlin/$packagePath")
     targetRoot.mkdirs()
-    File(targetRoot, "KmpDiPlugin.kt").writeText(correctedCode)
+    val code = fileSpec.toString()
+    File(targetRoot, "KmpDiPlugin.kt").writeText(code)
 }
