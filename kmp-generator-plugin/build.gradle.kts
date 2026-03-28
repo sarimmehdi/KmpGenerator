@@ -8,6 +8,14 @@ plugins {
     alias(libs.plugins.gradlePublishPlugin)
     alias(libs.plugins.ktlintPlugin)
     alias(libs.plugins.detektPlugin)
+    alias(libs.plugins.sonarPlugin)
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "KmpGenerator")
+        property("sonar.projectName", "KmpGenerator")
+    }
 }
 
 tasks.jacocoTestReport {

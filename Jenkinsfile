@@ -59,5 +59,13 @@ pipeline {
                 }
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarLocal') {
+                    sh './gradlew sonar --build-cache --no-daemon'
+                }
+            }
+        }
     }
 }

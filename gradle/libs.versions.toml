@@ -7,6 +7,7 @@ junitVersion = "6.0.3"
 assertJVersion = "3.27.7"
 detektVersion = "1.23.8"
 ktlintVersion = "14.2.0"
+sonarVersion = "7.2.3.7755"
 
 [libraries]
 androidxCoreKtxLibrary = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtxVersion" }
@@ -34,4 +35,5 @@ androidApplicationPlugin = { id = "com.android.application", version.ref = "agpV
 gradlePublishPlugin = { id = "com.gradle.plugin-publish", version.ref = "gradlePublishVersion" }
 detektPlugin = { id = "io.gitlab.arturbosch.detekt", version.ref = "detektVersion" }
 ktlintPlugin = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintVersion" }
+sonarPlugin = { id = "org.sonarqube", version.ref = "sonarVersion" }
 
