@@ -1,4 +1,4 @@
-package com.sarimmehdi.model
+package com.sarimmehdi.task.toml.model
 
 import java.io.Serial
 import java.io.Serializable

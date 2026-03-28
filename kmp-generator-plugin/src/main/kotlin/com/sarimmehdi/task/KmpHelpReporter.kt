@@ -1,6 +1,7 @@
 package com.sarimmehdi.task
 
 import com.sarimmehdi.task.buildlogic.GenerateBuildLogicTask
+import com.sarimmehdi.task.domain.GenerateDomainModuleTask
 import com.sarimmehdi.task.toml.StarterDataReporter
 import com.sarimmehdi.task.toml.TomlGenerator
 import org.gradle.api.DefaultTask
@@ -51,6 +52,10 @@ abstract class KmpHelpReporter : DefaultTask() {
         |> Task: ${GenerateBuildLogicTask.TASK_NAME}
         |  Description: ${GenerateBuildLogicTask.TASK_DESCRIPTION}
         |  Usage:       ${GenerateBuildLogicTask.TASK_EXAMPLE}
+        |  
+        |> Task: ${GenerateDomainModuleTask.TASK_NAME}
+        |  Description: ${GenerateDomainModuleTask.TASK_DESCRIPTION}
+        |  Usage:       ${GenerateDomainModuleTask.TASK_EXAMPLE}
         |
         |[CONFIGURATION EXAMPLES]
         |Add to your build.gradle.kts:

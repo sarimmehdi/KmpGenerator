@@ -2,6 +2,7 @@ package com.sarimmehdi
 
 import com.sarimmehdi.task.KmpHelpReporter
 import com.sarimmehdi.task.buildlogic.GenerateBuildLogicTask
+import com.sarimmehdi.task.domain.GenerateDomainModuleTask
 import com.sarimmehdi.task.toml.StarterDataReporter
 import com.sarimmehdi.task.toml.TomlGenerator
 import org.gradle.api.Plugin
@@ -31,6 +32,15 @@ class KmpGeneratorPlugin : Plugin<Project> {
             project = project,
             taskGroup = TASK_GROUP,
             config = extension.buildLogic,
+        )
+
+        GenerateDomainModuleTask.register(
+            project = project,
+            taskGroup = TASK_GROUP,
+            configs =
+                project.objects.listProperty(GenerateDomainModuleTask.GenerateDomainModuleConfig::class.java).apply {
+                    set(project.provider { extension.domain.toList() })
+                },
         )
     }
 

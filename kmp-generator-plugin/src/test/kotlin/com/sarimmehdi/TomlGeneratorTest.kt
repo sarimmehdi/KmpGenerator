@@ -1,12 +1,12 @@
 package com.sarimmehdi
 
-import com.sarimmehdi.model.Bundle
-import com.sarimmehdi.model.Library
-import com.sarimmehdi.model.Plugin
 import com.sarimmehdi.task.toml.StarterData
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.PROTECTED_BUNDLE_NAME
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.PROTECTED_LIBRARY_NAMES
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.PROTECTED_PLUGIN_NAMES
+import com.sarimmehdi.task.toml.model.Bundle
+import com.sarimmehdi.task.toml.model.Library
+import com.sarimmehdi.task.toml.model.Plugin
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test

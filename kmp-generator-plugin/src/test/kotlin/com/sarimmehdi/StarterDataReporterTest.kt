@@ -1,9 +1,6 @@
 package com.sarimmehdi
 
 import com.sarimmehdi.KmpGeneratorPlugin.Companion.TASK_GROUP
-import com.sarimmehdi.model.Bundle
-import com.sarimmehdi.model.Library
-import com.sarimmehdi.model.Plugin
 import com.sarimmehdi.task.toml.StarterData
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.BUNDLES_HEADER
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.BUNDLES_PAD_COUNTER
@@ -21,6 +18,9 @@ import com.sarimmehdi.task.toml.StarterDataReporter.Companion.TASK_DESCRIPTION
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.TASK_NAME
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.VERSIONS_HEADER
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.VERSIONS_PAD_COUNTER
+import com.sarimmehdi.task.toml.model.Bundle
+import com.sarimmehdi.task.toml.model.Library
+import com.sarimmehdi.task.toml.model.Plugin
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test

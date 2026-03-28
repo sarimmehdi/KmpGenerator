@@ -1,11 +1,11 @@
 package com.sarimmehdi.task.toml
 
-import com.sarimmehdi.model.Bundle
-import com.sarimmehdi.model.Library
-import com.sarimmehdi.model.Plugin
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.PROTECTED_BUNDLE_NAME
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.PROTECTED_LIBRARY_NAMES
 import com.sarimmehdi.task.toml.StarterDataReporter.Companion.PROTECTED_PLUGIN_NAMES
+import com.sarimmehdi.task.toml.model.Bundle
+import com.sarimmehdi.task.toml.model.Library
+import com.sarimmehdi.task.toml.model.Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFileProperty
@@ -229,7 +229,9 @@ abstract class TomlGenerator : DefaultTask() {
                 excludedPlugins.set(listOf("kotlinSerializationPlugin"))
                 
                 // Add your own custom entries
-                additionalLibraries.add(Library("myLib", "com.example", "core", "1.0.0", "myLibVersion"))
+                additionalLibraries.add(Library("myLibVersion", "1.0.0", "libName", "lib.group", "lib.core"))
+                additionalPlugins.add(Plugin("myPluginVersion", "1.0.0", "pluginName", "plugin.id"))
+                additionalBundles.add(Bundle("myBundle", listOf("myLib")))
             }
             
             Run via terminal:

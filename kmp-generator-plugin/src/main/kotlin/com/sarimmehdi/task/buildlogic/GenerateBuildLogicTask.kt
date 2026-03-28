@@ -8,6 +8,7 @@ import com.sarimmehdi.task.buildlogic.utils.generateKmpDiExtension
 import com.sarimmehdi.task.buildlogic.utils.generateProjectExts
 import com.sarimmehdi.task.buildlogic.utils.generateRootFiles
 import com.sarimmehdi.task.buildlogic.utils.generateUtilsConfig
+import com.sarimmehdi.task.utils.validatePackageName
 import com.squareup.kotlinpoet.TypeName
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -66,14 +67,6 @@ abstract class GenerateBuildLogicTask : DefaultTask() {
         println("KmpGenerator: build-logic scaffolded successfully at ${root.path}")
     }
 
-    private fun validatePackageName(pkg: String) {
-        val regex = "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$".toRegex()
-
-        require(regex.matches(pkg)) {
-            "Invalid package name: '$pkg'. It must follow standard Java/Kotlin naming conventions."
-        }
-    }
-
     internal data class ParameterData(
         val name: String,
         val type: TypeName,
@@ -84,7 +77,19 @@ abstract class GenerateBuildLogicTask : DefaultTask() {
     companion object {
         const val TASK_NAME = "generateBuildLogic"
         const val TASK_DESCRIPTION = "Scaffolds the build-logic directory with convention plugins."
-        const val TASK_EXAMPLE = "./gradlew $TASK_NAME"
+        const val TASK_EXAMPLE =
+            """
+            // 1. Configure in build.gradle.kts:
+            kmpGenerator {
+                buildLogic {
+                    basePackage.set("com.sarimmehdi")
+                    namespace.set("example")
+                }
+            }
+            
+            // 2. Run the task:
+            ./gradlew $TASK_NAME
+            """
 
         fun register(
             project: Project,

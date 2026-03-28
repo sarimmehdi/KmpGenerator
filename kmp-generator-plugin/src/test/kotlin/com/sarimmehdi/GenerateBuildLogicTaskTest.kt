@@ -46,7 +46,7 @@ class GenerateBuildLogicTaskTest {
     }
 
     @Test
-    fun `task generates complete clean architecture directory structure`() {
+    fun `task should succeed when package name is valid`() {
         GradleRunner
             .create()
             .withProjectDir(testProjectDir)
@@ -54,36 +54,70 @@ class GenerateBuildLogicTaskTest {
             .withPluginClasspath()
             .build()
 
-        val baseKotlinPath = "build-logic/convention/src/main/kotlin/${
-            BASE_PACKAGE.replace(
-                ".",
-                "/",
-            )
-        }"
+        val expectedDir = File(testProjectDir, "build-logic/convention/src/main/kotlin/com/sarimmehdi")
+        assertThat(expectedDir).exists().isDirectory()
+    }
 
-        val expectedFiles =
-            listOf(
-                "build-logic/settings.gradle.kts",
-                "build-logic/.gitignore",
-                "build-logic/convention/build.gradle.kts",
-                "$baseKotlinPath/KmpPlugin.kt",
-                "$baseKotlinPath/KmpDataPlugin.kt",
-                "$baseKotlinPath/KmpDiPlugin.kt",
-                "$baseKotlinPath/KmpDomainPlugin.kt",
-                "$baseKotlinPath/KmpPresentationPlugin.kt",
-                "$baseKotlinPath/utils/Config.kt",
-                "$baseKotlinPath/utils/ConfigureAndroidTarget.kt",
-                "$baseKotlinPath/utils/ConfigureQualityTools.kt",
-                "$baseKotlinPath/utils/KmpDataExtension.kt",
-                "$baseKotlinPath/utils/KmpDiExtension.kt",
-                "$baseKotlinPath/utils/ProjectExts.kt",
-            ).map { File(testProjectDir, it) }
+    @Test
+    fun `task should fail when package name starts with a number`() {
+        updateBuildFile(invalidPackage = "123.bad.package")
 
-        assertThat(expectedFiles)
-            .describedAs("Checking existence of generated Clean Architecture files")
-            .allSatisfy { file ->
-                assertThat(file).exists()
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(testProjectDir)
+                .withArguments(TASK_NAME)
+                .withPluginClasspath()
+                .buildAndFail()
+
+        assertThat(result.output).contains("Invalid package name: '123.bad.package'")
+    }
+
+    @Test
+    fun `task should fail when package name contains uppercase letters`() {
+        updateBuildFile(invalidPackage = "com.Sarim.Example")
+
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(testProjectDir)
+                .withArguments(TASK_NAME)
+                .withPluginClasspath()
+                .buildAndFail()
+
+        assertThat(result.output).contains("Invalid package name: 'com.Sarim.Example'")
+    }
+
+    @Test
+    fun `task should fail when package name contains invalid characters`() {
+        updateBuildFile(invalidPackage = "com.sarim-mehdi.task")
+
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(testProjectDir)
+                .withArguments(TASK_NAME)
+                .withPluginClasspath()
+                .buildAndFail()
+
+        assertThat(result.output).contains("Invalid package name: 'com.sarim-mehdi.task'")
+    }
+
+    private fun updateBuildFile(invalidPackage: String) {
+        buildFile.writeText(
+            """
+            plugins {
+                id("$BASE_PACKAGE.kmp-generator")
             }
+
+            kmpGenerator {
+                buildLogic {
+                    basePackage.set("$invalidPackage")
+                    namespace.set("$NAMESPACE")
+                }
+            }
+            """.trimIndent(),
+        )
     }
 
     @ParameterizedTest

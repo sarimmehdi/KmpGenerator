@@ -1,8 +1,8 @@
 package com.sarimmehdi.task.toml
 
-import com.sarimmehdi.model.Bundle
-import com.sarimmehdi.model.Library
-import com.sarimmehdi.model.Plugin
+import com.sarimmehdi.task.toml.model.Bundle
+import com.sarimmehdi.task.toml.model.Library
+import com.sarimmehdi.task.toml.model.Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
