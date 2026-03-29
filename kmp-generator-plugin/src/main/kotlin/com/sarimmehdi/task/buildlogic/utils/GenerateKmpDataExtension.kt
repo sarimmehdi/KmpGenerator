@@ -1,34 +1,36 @@
 package com.sarimmehdi.task.buildlogic.utils
 
 import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asClassName
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 import java.io.File
 
 internal fun generateKmpDataExtension(
     pkg: String,
     outputDir: DirectoryProperty,
 ) {
+    val propertyType =
+        Property::class
+            .asClassName()
+            .parameterizedBy(Boolean::class.asClassName())
+
     val useRoomProperty =
         PropertySpec
-            .builder("useRoom", Boolean::class)
-            .mutable(true)
-            .initializer("false")
+            .builder("useRoom", propertyType)
             .build()
 
     val useDatastoreProperty =
         PropertySpec
-            .builder("useDatastore", Boolean::class)
-            .mutable(true)
-            .initializer("false")
+            .builder("useDatastore", propertyType)
             .build()
 
-    val extensionClass =
+    val extensionInterface =
         TypeSpec
-            .classBuilder("KmpDataExtension")
-            .addModifiers(KModifier.OPEN)
+            .interfaceBuilder("KmpDataExtension")
             .addProperty(useRoomProperty)
             .addProperty(useDatastoreProperty)
             .build()
@@ -36,7 +38,7 @@ internal fun generateKmpDataExtension(
     val fileSpec =
         FileSpec
             .builder("$pkg.utils", "KmpDataExtension")
-            .addType(extensionClass)
+            .addType(extensionInterface)
             .build()
 
     val targetRoot = File(outputDir.get().asFile, "convention/src/main/kotlin")

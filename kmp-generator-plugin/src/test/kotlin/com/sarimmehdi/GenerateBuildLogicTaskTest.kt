@@ -341,6 +341,7 @@ class GenerateBuildLogicTaskTest {
                     package $$BASE_PACKAGE.utils
                     
                     import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
+                    import com.sarimmehdi.Config
                     import org.gradle.api.Project
                     import org.gradle.api.plugins.ExtensionAware
                     import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -350,6 +351,7 @@ class GenerateBuildLogicTaskTest {
                         (this as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryExtension>("android") {
                             val formattedPath = target.path.removePrefix(":").replace(":", ".")
                             namespace = "${libraryConfig.namespace}.$formattedPath"
+                    
                             compileSdk = libraryConfig.compileSdk
                             minSdk = libraryConfig.minSdk
                     
@@ -425,10 +427,11 @@ class GenerateBuildLogicTaskTest {
                     package $$BASE_PACKAGE.utils
                     
                     import kotlin.Boolean
+                    import org.gradle.api.provider.Property
                     
-                    public open class KmpDataExtension {
-                        public var useRoom: Boolean = false
-                        public var useDatastore: Boolean = false
+                    public interface KmpDataExtension {
+                        public val useRoom: Property<Boolean>
+                        public val useDatastore: Property<Boolean>
                     }
 
                 """.trimIndent(),
@@ -503,21 +506,30 @@ class GenerateBuildLogicTaskTest {
                     
                     internal class KmpDataPlugin : Plugin<Project> {
                         override fun apply(target: Project) {
-                            val dataExtension = target.extensions.create("kmpData", KmpDataExtension::class.java)
-                    
-                            with(target) {
-                                applyBasePlugins(dataExtension)
-                                configureQualityTools()
-                    
-                                if (dataExtension.useRoom) {
-                                    configureRoom()
+                            val dataExtension =
+                                target.extensions.create("kmpData", KmpDataExtension::class.java).apply {
+                                    useRoom.convention(false)
+                                    useDatastore.convention(false)
                                 }
                     
-                                configureKmpTargets(dataExtension)
+                            with(target) {
+                                applyBasePlugins()
+                                configureQualityTools()
+                                extensions.configure<KotlinMultiplatformExtension> {
+                                    configureAndroidTarget(this@with)
+                                }
+                                configureRoomSettings()
+                                afterEvaluate {
+                                    configureKmpDependencies(dataExtension)
+                                    if (dataExtension.useRoom.get()) {
+                                        dependencies.add("kspCommonMainMetadata", libs.roomCompilerLibrary.get())
+                                        dependencies.add("kspAndroid", libs.roomCompilerLibrary.get())
+                                    }
+                                }
                             }
                         }
                     
-                        private fun Project.applyBasePlugins(dataExtension: KmpDataExtension) {
+                        private fun Project.applyBasePlugins() {
                             pluginManager.apply(
                                 libs.plugins.kotlinMultiplatformPlugin
                                     .get()
@@ -538,40 +550,37 @@ class GenerateBuildLogicTaskTest {
                                     .get()
                                     .pluginId,
                             )
+                            pluginManager.apply(
+                                libs.plugins.kspPlugin
+                                    .get()
+                                    .pluginId,
+                            )
+                            pluginManager.apply(
+                                libs.plugins.roomPlugin
+                                    .get()
+                                    .pluginId,
+                            )
+                        }
                     
-                            if (dataExtension.useRoom) {
-                                pluginManager.apply(
-                                    libs.plugins.roomPlugin
-                                        .get()
-                                        .pluginId,
-                                )
-                                pluginManager.apply(
-                                    libs.plugins.kspPlugin
-                                        .get()
-                                        .pluginId,
-                                )
+                        private fun Project.configureRoomSettings() {
+                            extensions.configure<KspExtension> {
+                                arg("room.generateKotlin", "true")
+                            }
+                            extensions.configure<RoomExtension> {
+                                schemaDirectory("$projectDir/schemas")
                             }
                         }
                     
-                        private fun Project.configureRoom() {
-                            extensions.configure<KspExtension> { arg("room.generateKotlin", "true") }
-                            extensions.configure<RoomExtension> { schemaDirectory("$projectDir/schemas") }
-                    
-                            dependencies.add("kspCommonMainMetadata", libs.roomCompilerLibrary.get())
-                            dependencies.add("kspAndroid", libs.roomCompilerLibrary.get())
-                        }
-                    
-                        private fun Project.configureKmpTargets(dataExtension: KmpDataExtension) {
+                        private fun Project.configureKmpDependencies(dataExtension: KmpDataExtension) {
                             extensions.configure<KotlinMultiplatformExtension> {
-                                configureAndroidTarget(this@configureKmpTargets)
-                                sourceSets.apply {
-                                    commonMain.dependencies {
+                                sourceSets.named("commonMain") {
+                                    dependencies {
                                         implementation(libs.bundles.kotlinxEssentialsBundle)
                     
-                                        if (dataExtension.useRoom) {
+                                        if (dataExtension.useRoom.get()) {
                                             implementation(libs.bundles.roomCommonBundle)
                                         }
-                                        if (dataExtension.useDatastore) {
+                                        if (dataExtension.useDatastore.get()) {
                                             implementation(libs.bundles.datastoreBundle)
                                         }
                                     }

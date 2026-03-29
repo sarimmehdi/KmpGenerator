@@ -1,7 +1,6 @@
 package com.sarimmehdi.task.buildlogic
 
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -16,16 +15,17 @@ internal fun generateKmpDataPlugin(
 ) {
     val projectClass = ClassName("org.gradle.api", "Project")
     val extensionClass = ClassName("$pkg.utils", "KmpDataExtension")
+    val kmpExtensionClass = ClassName("org.jetbrains.kotlin.gradle.dsl", "KotlinMultiplatformExtension")
 
     val pluginType =
         TypeSpec
             .classBuilder("KmpDataPlugin")
             .addModifiers(KModifier.INTERNAL)
             .addSuperinterface(ClassName("org.gradle.api", "Plugin").parameterizedBy(projectClass))
-            .addFunction(buildApplyFunction(extensionClass))
-            .addFunction(buildApplyBasePlugins(extensionClass))
-            .addFunction(buildConfigureRoom())
-            .addFunction(buildConfigureKmpTargets(extensionClass))
+            .addFunction(buildApplyFunction(extensionClass, kmpExtensionClass))
+            .addFunction(buildApplyBasePlugins())
+            .addFunction(buildConfigureRoomSettings())
+            .addFunction(buildConfigureKmpDependencies(extensionClass, kmpExtensionClass))
             .build()
 
     FileSpec
@@ -34,95 +34,122 @@ internal fun generateKmpDataPlugin(
         .addImport("org.gradle.kotlin.dsl", "configure")
         .addImport("$pkg.utils", "libs", "configureAndroidTarget", "configureQualityTools")
         .indent("    ")
-        .addKotlinDefaultImports(includeJvm = false, includeJs = false)
         .build()
         .writeTo(File(outputDir.get().asFile, "convention/src/main/kotlin"))
 }
 
-private fun buildApplyFunction(extensionClass: ClassName): FunSpec =
+private fun buildApplyFunction(
+    extensionClass: ClassName,
+    kmpExtension: ClassName,
+): FunSpec =
     FunSpec
         .builder("apply")
         .addModifiers(KModifier.OVERRIDE)
         .addParameter("target", ClassName("org.gradle.api", "Project"))
         .addCode(
             """
-            val dataExtension = target.extensions.create("kmpData", %T::class.java)
-
-            with(target) {
-                applyBasePlugins(dataExtension)
-                configureQualityTools()
-
-                if (dataExtension.useRoom) {
-                    configureRoom()
+            val dataExtension =
+                target.extensions.create("kmpData", %T::class.java).apply {
+                    useRoom.convention(false)
+                    useDatastore.convention(false)
                 }
 
-                configureKmpTargets(dataExtension)
+            with(target) {
+                applyBasePlugins()
+                configureQualityTools()
+                extensions.configure<%T> {
+                    configureAndroidTarget(this@with)
+                }
+                configureRoomSettings()
+                afterEvaluate {
+                    configureKmpDependencies(dataExtension)
+                    if (dataExtension.useRoom.get()) {
+                        dependencies.add("kspCommonMainMetadata", libs.roomCompilerLibrary.get())
+                        dependencies.add("kspAndroid", libs.roomCompilerLibrary.get())
+                    }
+                }
             }
             """.trimIndent(),
             extensionClass,
+            kmpExtension,
         ).build()
 
-private fun buildApplyBasePlugins(extensionClass: ClassName): FunSpec =
+private fun buildApplyBasePlugins(): FunSpec =
     FunSpec
         .builder("applyBasePlugins")
         .addModifiers(KModifier.PRIVATE)
         .receiver(ClassName("org.gradle.api", "Project"))
-        .addParameter("dataExtension", extensionClass)
         .addCode(
-            CodeBlock
-                .builder()
-                .add(pluginApply("kotlinMultiplatformPlugin"))
-                .add(pluginApply("androidKotlinMultiplatformLibrary"))
-                .add(pluginApply("detektPlugin"))
-                .add(pluginApply("ktlintPlugin"))
-                .add("\n")
-                .beginControlFlow("if (dataExtension.useRoom)")
-                .add(pluginApply("roomPlugin"))
-                .add(pluginApply("kspPlugin"))
-                .endControlFlow()
-                .build(),
-        ).build()
-
-// Helper to force the specific indentation for plugin IDs
-private fun pluginApply(plugin: String): CodeBlock =
-    CodeBlock.of("pluginManager.apply(⇥\nlibs.plugins.$plugin⇥\n.get()⇥\n.pluginId,⇤⇤⇤\n)\n")
-
-private fun buildConfigureRoom(): FunSpec =
-    FunSpec
-        .builder("configureRoom")
-        .addModifiers(KModifier.PRIVATE)
-        .receiver(ClassName("org.gradle.api", "Project"))
-        .addStatement(
-            "extensions.configure<%T> { arg(%S, %S) }",
-            ClassName("com.google.devtools.ksp.gradle", "KspExtension"),
-            "room.generateKotlin",
-            "true",
-        ).addStatement(
-            "extensions.configure<%T> { schemaDirectory(\"\$projectDir/schemas\") }",
-            ClassName("androidx.room.gradle", "RoomExtension"),
+            """
+            pluginManager.apply(
+                libs.plugins.kotlinMultiplatformPlugin
+                    .get()
+                    .pluginId,
+            )
+            pluginManager.apply(
+                libs.plugins.androidKotlinMultiplatformLibrary
+                    .get()
+                    .pluginId,
+            )
+            pluginManager.apply(
+                libs.plugins.detektPlugin
+                    .get()
+                    .pluginId,
+            )
+            pluginManager.apply(
+                libs.plugins.ktlintPlugin
+                    .get()
+                    .pluginId,
+            )
+            pluginManager.apply(
+                libs.plugins.kspPlugin
+                    .get()
+                    .pluginId,
+            )
+            pluginManager.apply(
+                libs.plugins.roomPlugin
+                    .get()
+                    .pluginId,
+            )
+            """.trimIndent(),
         ).addCode("\n")
-        .addStatement("dependencies.add(\"kspCommonMainMetadata\", libs.roomCompilerLibrary.get())")
-        .addStatement("dependencies.add(\"kspAndroid\", libs.roomCompilerLibrary.get())")
         .build()
 
-private fun buildConfigureKmpTargets(extensionClass: ClassName): FunSpec =
+private fun buildConfigureRoomSettings(): FunSpec =
     FunSpec
-        .builder("configureKmpTargets")
+        .builder("configureRoomSettings")
+        .addModifiers(KModifier.PRIVATE)
+        .receiver(ClassName("org.gradle.api", "Project"))
+        .addCode(
+            $$"""
+            extensions.configure<%T> {
+                arg("room.generateKotlin", "true")
+            }
+            extensions.configure<%T> {
+                schemaDirectory("$projectDir/schemas")
+            }
+            """.trimIndent(),
+            ClassName("com.google.devtools.ksp.gradle", "KspExtension"),
+            ClassName("androidx.room.gradle", "RoomExtension"),
+        ).build()
+
+private fun buildConfigureKmpDependencies(
+    extensionClass: ClassName,
+    kmpExtension: ClassName,
+): FunSpec =
+    FunSpec
+        .builder("configureKmpDependencies")
         .addModifiers(KModifier.PRIVATE)
         .receiver(ClassName("org.gradle.api", "Project"))
         .addParameter("dataExtension", extensionClass)
-        .beginControlFlow(
-            "extensions.configure<%T>",
-            ClassName("org.jetbrains.kotlin.gradle.dsl", "KotlinMultiplatformExtension"),
-        ).addStatement("configureAndroidTarget(this@configureKmpTargets)")
-        .beginControlFlow("sourceSets.apply")
-        .beginControlFlow("commonMain.dependencies")
+        .beginControlFlow("extensions.configure<%T>", kmpExtension)
+        .beginControlFlow("sourceSets.named(%S)", "commonMain")
+        .beginControlFlow("dependencies")
         .addStatement("implementation(libs.bundles.kotlinxEssentialsBundle)")
-        .addCode("\n")
-        .beginControlFlow("if (dataExtension.useRoom)")
+        .beginControlFlow("if (dataExtension.useRoom.get())")
         .addStatement("implementation(libs.bundles.roomCommonBundle)")
         .endControlFlow()
-        .beginControlFlow("if (dataExtension.useDatastore)")
+        .beginControlFlow("if (dataExtension.useDatastore.get())")
         .addStatement("implementation(libs.bundles.datastoreBundle)")
         .endControlFlow()
         .endControlFlow()

@@ -15,7 +15,8 @@ internal fun generateConfigureAndroidTarget(
     val extensionAwareClass = ClassName("org.gradle.api.plugins", "ExtensionAware")
     val kmpExtensionClass = ClassName("org.jetbrains.kotlin.gradle.dsl", "KotlinMultiplatformExtension")
     val androidLibExtensionClass = ClassName("com.android.build.api.dsl", "KotlinMultiplatformAndroidLibraryExtension")
-    val configClass = ClassName("$pkg.utils", "Config")
+
+    val configClass = ClassName(pkg, "Config")
 
     val configureFunction =
         FunSpec
